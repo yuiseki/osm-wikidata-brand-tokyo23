@@ -1,7 +1,7 @@
 # A name of its own. Without it compose takes the directory name, which is
 # `docker` here and `docker` in osm-tokyo23-src-2026-08 too, and each project
 # reports the other's containers as orphans and offers to remove them.
-name: osm-wikidata-brand
+name: osm-wikidata-brand-tokyo23
 
 services:
   build:

@@ -1,7 +1,12 @@
-# osm-wikidata-brand
+# osm-wikidata-brand-tokyo23
 
 Every way two independent sources name the same shop chain, in the
-twenty-three special wards of Tokyo.
+twenty-three special wards of Tokyo, and the name of every shop in those
+chains.
+
+The wards are in the name because the counts are of them. `7-ELEVEN` on 1,513
+features is a fact about Tokyo, not about the world, and a second city built
+the same way would be a second dataset rather than more rows in this one.
 
 729 brands, 25,149 features, 9,201 distinct spellings across 80 name keys.
 

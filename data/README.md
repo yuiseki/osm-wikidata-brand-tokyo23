@@ -18,13 +18,16 @@ size_categories:
 - n<1K
 ---
 
-# osm-wikidata-brand
+# osm-wikidata-brand-tokyo23
 
 Every way two independent sources name the same shop chain, in the
 twenty-three special wards of Tokyo, and the name of every shop in those
 chains.
 
 729 brands, 25,149 features, 9,201 distinct values across 80 keys.
+
+The wards are in the name because the counts are of them. `7-ELEVEN` on 1,513
+features is a fact about Tokyo and not about the world.
 
 A branded feature in OpenStreetMap carries `brand:wikidata`, which is a
 Wikidata item id, and around it whatever names the mappers wrote. The Wikidata
@@ -118,6 +121,24 @@ Where the extract's keys fall:
 The romaji are only reachable through a name key: `brand:ja_rm` is almost
 never used, so `Famirī Mato` on 313 features and `Dotōru Kōhī Shoppu` on 207
 would be lost if the name keys went.
+
+## The columns on the Hub
+
+The file is one JSON object per brand and the Hub wants a table, so the
+frequently read fields become columns and the nested ones stay JSON. A brand
+has up to 2,515 values under up to eighty keys, and no column arrangement
+survives that.
+
+| column | |
+|---|---|
+| `qid` `features` | the id and the feature count |
+| `label_en` `label_ja` `description_en` `description_ja` | from Wikidata, read as they are |
+| `osm` | JSON. `{key: {value: count}}`, the whole OpenStreetMap side |
+| `aliases` | JSON. `{lang: [string]}` from Wikidata |
+| `record` | JSON. The whole object, lossless |
+
+`json.loads` the JSON columns. Nothing in the repository's `brands.jsonl` is
+missing from `record`.
 
 ## What each source knows that the other does not
 
