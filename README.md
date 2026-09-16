@@ -73,17 +73,32 @@ of the dump.
 python3 src/build.py
 ```
 
-## License
+## Two licences in one file
 
-ODbL-1.0.
+This joins an ODbL source to a CC0 one, so which field came from where is
+part of the data rather than a footnote. `data/provenance.yaml` says it field
+by field, and the record says it structurally: everything under `osm` is from
+OpenStreetMap and everything under `wikidata` is from Wikidata.
 
-The OpenStreetMap side is a Derivative Database of OpenStreetMap, so the file
-as a whole is:
+    OpenStreetMap   tokyo23-260831.osm.pbf, ODbL-1.0
+                    qid, features, and every spelling under `osm`
+    Wikidata        wikidata-20260831-all.json.bz2, CC0-1.0
+                    label, description and aliases under `wikidata`
+
+The file contains content derived from OpenStreetMap, so redistributing it
+means complying with ODbL:
 
     (c) OpenStreetMap contributors, available under the Open Database License.
     https://www.openstreetmap.org/copyright
 
-The Wikidata side is CC0 and imposes nothing of its own. Mixing the two does
-not make the result CC0: ODbL is the stricter licence and it governs.
+The CC0 half carries no conditions of its own, and sitting beside ODbL content
+does not give it any. Nor does the reverse: the ODbL obligations do not
+disappear because CC0 content is alongside.
+
+Whether joining the two on a shared key makes a Derivative Database or a
+Collective Database under ODbL section 4.5 is not settled here. They are
+joined into one record rather than shipped in one archive, which is why the
+stricter reading is the one taken. That is a position, not legal advice, and
+`data/provenance.yaml` says so in as many words.
 
 The code in `src/` is MIT.

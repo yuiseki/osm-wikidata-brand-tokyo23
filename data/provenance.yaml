@@ -1,0 +1,66 @@
+# Where every field comes from, and under what licence. Two sources with
+# different licences are joined here, so this is field by field rather than
+# file by file.
+sources:
+  - name: OpenStreetMap
+    through: |
+      tokyo23-260831.osm.pbf, the twenty-three special wards of Tokyo cut from
+      the planet file of 2026-08-31, loaded into PostGIS by osm2pgsql and read
+      with SQL. Nothing was fetched from the live API.
+    file: tokyo23-260831.osm.pbf
+    md5: 44a4ba2182379c147f20a27ad1b513ef
+    bytes: 87399745
+    osm_base: 2026-08-30T23:50:59Z
+    published_as: https://huggingface.co/datasets/yuiseki/osm-tokyo23-src-2026-08
+    upstream: https://planet.openstreetmap.org/pbf/planet-260831.osm.pbf
+    licence: ODbL-1.0
+    licence_url: https://www.openstreetmap.org/copyright
+    supplies:
+      - qid
+      - features
+      - every key under `osm`, which is every name key carried by a feature
+        tagged with that brand:wikidata, and how many features carry each
+        spelling
+
+  - name: Wikidata
+    through: |
+      wikidata-20260831-all.json.bz2, read once in a stream. The items taken
+      are the 9,706 that the extract above points at through any *:wikidata
+      key, plus every item carrying property P1282.
+    file: wikidata-20260831-all.json.bz2
+    bytes: 102943257005
+    upstream: https://dumps.wikimedia.org/wikidatawiki/entities/20260831/
+    licence: CC0-1.0
+    licence_url: https://creativecommons.org/publicdomain/zero/1.0/
+    supplies:
+      - every key under `wikidata`: label, description, aliases, found
+
+same_day: |
+  Both sources are dated 2026-08-31. That is deliberate. A brand added to one
+  in September and to the other in October would show up here as the two
+  sources disagreeing, when the only difference is when each was read.
+
+licensing:
+  position: |
+    The file contains content derived from OpenStreetMap, so redistributing
+    the file means complying with ODbL-1.0. The Wikidata content is CC0 and
+    carries no conditions of its own; being placed beside ODbL content does
+    not put conditions on it, and being placed beside CC0 content does not
+    remove them from the OpenStreetMap side.
+  what_this_is_not: |
+    Not legal advice, and not a ruling on whether the join makes a Derivative
+    Database or a Collective Database under ODbL section 4.5. The two are
+    joined on a shared key into one record rather than merely shipped in one
+    archive, which is why the stricter reading is the one taken here.
+  separating_them: |
+    The two sides are in separate keys of every record, `osm` and `wikidata`,
+    so a reader who wants only the CC0 half can take it without inspecting the
+    values. Whether that extraction leaves ODbL behind is the reader's
+    judgement to make; this file's position is only that the whole is ODbL.
+  attribution: |
+    (c) OpenStreetMap contributors, available under the Open Database License.
+    https://www.openstreetmap.org/copyright
+
+code:
+  licence: MIT
+  covers: src/
