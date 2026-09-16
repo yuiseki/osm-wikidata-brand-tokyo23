@@ -96,6 +96,29 @@ licensing:
     (c) OpenStreetMap contributors, available under the Open Database License.
     https://www.openstreetmap.org/copyright
 
+environment:
+  image: docker/Dockerfile
+  base: debian:bookworm-slim@sha256:88200866dfff7ea7f5cbcb6ec7c8a701889efe6fe859fe64d6990e4b07ea4171
+  python3: 3.11.2-1+b1
+  python3-pip: 23.0.1+dfsg-1
+  lbzip2: 2.5-2.3
+  psycopg: 3.3.2
+  note: |
+    The base is pinned by digest and not by tag, because bookworm-slim moves
+    and a digest does not. psycopg's version is asserted after installation, so
+    pip resolving something else is a build failure. Debian drops old versions
+    from the archive, so these pins will stop resolving one day; that the build
+    then fails is the point of writing them down.
+
+    PostGIS is not in this image. It belongs to osm-tokyo23-src-2026-08, which
+    pins postgis/postgis:16-3.4 and osm2pgsql 1.11.0 and is where the frozen
+    extract is built; this container connects to it over the host network.
+  reproduced: |
+    The three steps were run again inside this image, against the same dump and
+    the same database, and every output matched the run made outside it byte
+    for byte: the 9,706 ids, the 13,288 Wikidata items, and data/brands.jsonl.
+    The dump pass read 121,519,241 items both times.
+
 how_it_was_built: |
   Three steps, in this order, all of them in src/ and none of them reaching
   outside this repository by absolute path.

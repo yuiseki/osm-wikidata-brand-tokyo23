@@ -81,6 +81,25 @@ The Wikidata dump, 96 GiB, from
 decompress it: 96 GiB compressed is well over a terabyte open. `lbzip2` reads
 it across all cores and `bzip2` takes hours on one.
 
+In the pinned image, which is where it was built:
+
+```sh
+cd docker && docker compose build
+docker compose run --rm build sh -c '
+  cd /work
+  python3 src/qids.py --out tmp/qids.txt
+  python3 src/wikidata_osm_tags.py --dump /dump/wikidata-20260831-all.json.bz2 \
+      --qids tmp/qids.txt --out tmp/wikidata.jsonl
+  python3 src/build.py'
+```
+
+Debian bookworm at a fixed digest, python3 3.11.2, lbzip2 2.5 and psycopg
+3.3.2, each named in `docker/Dockerfile`. Running the three steps inside the
+image reproduced the run made outside it byte for byte, which is the only
+reason to believe the pins are the right ones.
+
+Or on the host, if those versions are what the host has:
+
 ```sh
 python3 src/qids.py --out tmp/qids.txt              # 9,706 ids, seconds
 python3 src/wikidata_osm_tags.py \
