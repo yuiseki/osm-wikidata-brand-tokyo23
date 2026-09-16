@@ -66,12 +66,46 @@ counts are in the record so that a reader can filter for themselves.
 
 ## Building it
 
-Needs the frozen extract in PostGIS and the Wikidata items already pulled out
-of the dump.
+Everything is here. Nothing reaches into another checkout by absolute path,
+because a reader who clones this could not follow such a path and the file
+would be rebuildable by its author alone.
+
+Two inputs have to be in place first, and both are named rather than assumed.
+
+The frozen extract, in PostGIS. `osm-tokyo23-src-2026-08` builds it: fetch the
+planet file of 2026-08-31, run its numbered scripts, and the database comes up
+on port 55433. `PG_DSN` points somewhere else if it is somewhere else.
+
+The Wikidata dump, 96 GiB, from
+`https://dumps.wikimedia.org/wikidatawiki/entities/20260831/`. Do not
+decompress it: 96 GiB compressed is well over a terabyte open. `lbzip2` reads
+it across all cores and `bzip2` takes hours on one.
 
 ```sh
-python3 src/build.py
+python3 src/qids.py --out tmp/qids.txt              # 9,706 ids, seconds
+python3 src/wikidata_osm_tags.py \
+    --dump .../wikidata-20260831-all.json.bz2 \
+    --qids tmp/qids.txt --out tmp/wikidata.jsonl    # 48 min, 121.5M items
+python3 src/build.py                                # seconds
 ```
+
+The middle step reads 121,519,241 items at about 42,000 a second and keeps
+13,288: the 9,690 the extract points at, and 3,594 more that carry Wikidata's
+property `P1282`, which maps a concept to an OpenStreetMap tag. It decides on
+bytes before parsing, because fewer than one item in a thousand is wanted and
+parsing all of them would be the whole cost.
+
+Checksums, so that a rebuild can be told from a coincidence:
+
+    tokyo23-260831.osm.pbf  md5 44a4ba2182379c147f20a27ad1b513ef
+    wikidata-20260831-all.json.bz2
+                            md5  f99e3ee0778ffe1c3b54fa5dbc6ce395
+                            sha1 b24eea0dee9f2fbe7ca70e6efe3209eb69bc48af
+                            102,943,257,005 bytes
+
+Both are the figures the sources publish, not the figures of the local copy.
+The copy that was actually read was checked against the first of them and
+matched, so the dump behind this file is the dump Wikimedia put out.
 
 ## Two licences in one file
 

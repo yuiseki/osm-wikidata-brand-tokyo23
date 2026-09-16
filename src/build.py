@@ -26,11 +26,13 @@ import os
 import sys
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-QA = "/Workspaces/repos/__yuiseki/_research/osm-tokyo23-qa-2026-08/src"
-WD = ("/Workspaces/repos/__yuiseki/_research/osm-tokyo23-bench/"
-      "data/wikidata-osm.jsonl")
-sys.path.insert(0, QA)
-import oracle  # noqa: E402
+# Everything this needs is either in this repository or named by an
+# environment variable. Nothing reaches into a sibling checkout by absolute
+# path, because a reader who clones this cannot follow such a path and the
+# file would not be rebuildable by anyone but its author.
+PG_DSN = os.environ.get(
+    "PG_DSN", "host=localhost port=55433 dbname=osm user=osm password=osm")
+WD = os.environ.get("WIKIDATA_ITEMS", os.path.join(BASE, "tmp/wikidata.jsonl"))
 
 # Every key on a branded feature that is a way of saying its name. Taken from
 # what the extract actually carries rather than from a list written here, so
@@ -58,9 +60,24 @@ SOURCE = {
 }
 
 
+_conn = None
+
+
+def pg(sql, params=None):
+    global _conn
+    import psycopg
+    if _conn is None or _conn.closed:
+        _conn = psycopg.connect(PG_DSN)
+        _conn.read_only = True
+        _conn.autocommit = True
+    with _conn.cursor() as cur:
+        cur.execute(sql, params)
+        return cur.fetchall()
+
+
 def osm_names():
     """{qid: {key: {spelling: features}}} from the frozen extract."""
-    rows = oracle.pg(f"""
+    rows = pg(f"""
 select wd, k, v, sum(n) from (
   select tags -> 'brand:wikidata' as wd, (each(tags)).key as k,
          (each(tags)).value as v, 1 as n
@@ -85,7 +102,7 @@ select wd, k, v, sum(n) from (
 def osm_features():
     """{qid: features}, so that a brand on one shop is not read as a brand on
     a thousand."""
-    rows = oracle.pg("""
+    rows = pg("""
 select wd, sum(n) from (
   select tags -> 'brand:wikidata' as wd, count(*) as n
     from planet_osm_point where tags ? 'brand:wikidata' group by 1

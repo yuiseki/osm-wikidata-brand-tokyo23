@@ -34,7 +34,20 @@ sources:
       key, plus every item carrying property P1282.
     file: wikidata-20260831-all.json.bz2
     bytes: 102943257005
+    md5: f99e3ee0778ffe1c3b54fa5dbc6ce395
+    sha1: b24eea0dee9f2fbe7ca70e6efe3209eb69bc48af
+    checksums_from: |
+      wikidata-20260831-md5sums.txt and -sha1sums.txt as the source publishes
+      them, not as computed locally. A local checksum matching a local file
+      proves nothing about what was downloaded.
+    verified: |
+      The copy that was read has md5 f99e3ee0778ffe1c3b54fa5dbc6ce395, computed
+      over the 102,943,257,005 bytes on disk and equal to the figure above. So
+      the dump that produced this file is the dump the source published, and
+      not a truncated or resumed download that happened to be the right length.
     upstream: https://dumps.wikimedia.org/wikidatawiki/entities/20260831/
+    items_read: 121519241
+    items_kept: 13288
     licence: CC0-1.0
     licence_url: https://creativecommons.org/publicdomain/zero/1.0/
     licence_note: |
@@ -82,6 +95,21 @@ licensing:
   attribution: |
     (c) OpenStreetMap contributors, available under the Open Database License.
     https://www.openstreetmap.org/copyright
+
+how_it_was_built: |
+  Three steps, in this order, all of them in src/ and none of them reaching
+  outside this repository by absolute path.
+
+    src/qids.py              the 9,706 Wikidata ids the extract points at,
+                             off all 31 of its *:wikidata keys
+    src/wikidata_osm_tags.py one pass over the dump, 48 minutes, keeping the
+                             items those ids name and the ones carrying P1282
+    src/build.py             the join, and the counting of spellings
+
+  The inputs are named by environment variable, PG_DSN and WIKIDATA_ITEMS, so
+  that the same code runs against a rebuilt stack. Rerunning the three steps
+  against the same two sources reproduces data/brands.jsonl byte for byte;
+  that was checked rather than assumed.
 
 code:
   licence: MIT
