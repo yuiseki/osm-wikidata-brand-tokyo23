@@ -3,7 +3,9 @@
 Read before using it. Two of the three things below look like defects in this
 file and are not: they are what the data says, recorded rather than tidied.
 
-## A name key is not a brand key
+## A name key is not a brand key, and that is not a fault
+
+The heading used to say only the first half.
 
 Every record holds nine families of key, and they do not mean the same thing.
 
@@ -20,6 +22,17 @@ Every record holds nine families of key, and they do not mean the same thing.
 `brand:en` on a FamilyMart says the chain is called FamilyMart. `name:en` on
 the same feature usually says the same thing, and sometimes does not: it may
 be `FamilyMart Nishi-Ikebukuro`, which is this shop and not the chain.
+
+Counted across the file, 5,910 of the 7,532 values under a `name` key appear
+on exactly one feature, against 231 of the 1,307 under a `brand` key. The
+name keys are 78% singletons and the brand keys are 18%.
+
+Those singletons are branch names: `マクドナルド下丸子駅前店`,
+`ファミリーマート 西池袋店`. They are not other ways of writing McDonald's or
+FamilyMart; each is one shop. That makes them useless as spelling variants and
+useful as something else, which is a list of real shops tied to a chain and to
+a Wikidata id. Both readings are served by keeping them and saying which key
+is which.
 
 Where it goes furthest wrong is the share cycle. A HELLO CYCLING port often
 stands in a convenience store car park, so the feature carries

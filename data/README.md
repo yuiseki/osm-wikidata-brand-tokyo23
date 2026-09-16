@@ -21,9 +21,10 @@ size_categories:
 # osm-wikidata-brand
 
 Every way two independent sources name the same shop chain, in the
-twenty-three special wards of Tokyo.
+twenty-three special wards of Tokyo, and the name of every shop in those
+chains.
 
-729 brands, 25,149 features, 9,201 distinct spellings across 80 name keys.
+729 brands, 25,149 features, 9,201 distinct values across 80 keys.
 
 A branded feature in OpenStreetMap carries `brand:wikidata`, which is a
 Wikidata item id, and around it whatever names the mappers wrote. The Wikidata
@@ -58,7 +59,7 @@ where they differ is the point of the file.
 |---|---|---|
 | `qid` | string | the Wikidata item id, and the key the two sources are joined on. Always present, always `Q` followed by digits |
 | `features` | integer | how many features in the extract carry this `brand:wikidata`. 1 to 2,334; 143 brands have exactly 1 |
-| `osm` | object | from OpenStreetMap. `{name key: {spelling: how many features use it}}`. 80 keys occur; a record has between 1 and 2,515 spellings |
+| `osm` | object | from OpenStreetMap. `{key: {value: how many features carry it}}`. 80 keys occur; a record has between 1 and 2,515 values. The keys are two different things and the next section says which |
 | `wikidata` | object | from Wikidata. Four fields, below |
 
 Inside `wikidata`:
@@ -73,16 +74,50 @@ Inside `wikidata`:
 Only `en` and `ja` were taken. The item may hold a hundred other languages and
 they are not here.
 
-The keys inside `osm` are whatever the extract carries. The commonest:
+## `brand:*` is the chain. `name:*` is the shop
+
+Two kinds of key are in `osm` and they answer different questions.
+
+`brand:*` is what the chain is called. `brand:ja` on 1,252 FamilyMart
+features says `ファミリーマート` on every one of them.
+
+`name:*` is what this particular feature is called, which is usually the
+chain's name and sometimes the chain's name with a branch on the end:
+
+    name:ja   ファミリーマート            1251
+    name:ja   ファミリーマート 西池袋店         1
+    name:ja   マクドナルド                232
+    name:ja   マクドナルド下丸子駅前店           1
+
+`マクドナルド下丸子駅前店` is not another way of writing McDonald's. It is a
+McDonald's, in Shimomaruko.
+
+How far the two diverge, by how many values appear on exactly one feature:
+
+    name           7,532 values    5,910 on one feature    78%
+    brand          1,307             231                   18%
+    official_name    156              71                   46%
+    alt_name         104              53                   51%
+
+So a reader after spelling variants wants `brand:*`, and a reader after
+concrete instances of a brand wants `name:*`. Both are here and the counts
+separate them: a value on 1,251 features is what the chain is called, a value
+on one is what one shop is called.
+
+Neither is filtered out. The branch names are the reason: they are a list of
+real Tokyo shops, tied to a chain and to a Wikidata id, and that is worth
+having even though it is not what the rest of the file is.
+
+Where the extract's keys fall:
 
     name:en       on 697 brands        brand:en      on 590
     name:ja       on 646               brand:ja      on 586
     name:ja_rm    on 221   romaji      name:ja-Latn  on 183
     name:ja-Hira  on 177   hiragana    name:ko       on 68
 
-A count is not decoration. A spelling on 1,513 features and a spelling on one
-are both in the file and are not the same claim, and the counts are how a
-reader tells a chain's name from one shop's.
+The romaji are only reachable through a name key: `brand:ja_rm` is almost
+never used, so `Famirī Mato` on 313 features and `Dotōru Kōhī Shoppu` on 207
+would be lost if the name keys went.
 
 ## What each source knows that the other does not
 
@@ -111,10 +146,11 @@ Wikidata's alone: `スタバ` is what people say and no feature is tagged with i
 
 ## Read this before using it
 
-Three things look like defects and are not. A name key is not a brand key, and
-a HELLO CYCLING port standing in a convenience store car park carries the
-cycle scheme's `brand:wikidata` beside the shop's `name`. One chain has two
-Wikidata items. 143 of the 729 brands appear on a single feature.
+Three things look like defects and are not. A HELLO CYCLING port standing in a
+convenience store car park carries the cycle scheme's `brand:wikidata` beside
+the shop's `name`, so 145 features appear to say that HELLO CYCLING is called
+Seven-Eleven. One chain has two Wikidata items. 143 of the 729 brands appear
+on a single feature.
 
 Nothing is filtered out over any of it; the keys and the counts are in the
 record so that a reader can filter for themselves. The repository's
