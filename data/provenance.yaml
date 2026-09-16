@@ -15,6 +15,11 @@ sources:
     upstream: https://planet.openstreetmap.org/pbf/planet-260831.osm.pbf
     licence: ODbL-1.0
     licence_url: https://www.openstreetmap.org/copyright
+    licence_note: |
+      The copyright page asks two things of anyone redistributing data derived
+      from OpenStreetMap, and they are separate: credit OpenStreetMap, and make
+      clear that the data is available under ODbL. Both are done in README.md
+      and in this file.
     supplies:
       - qid
       - features
@@ -32,6 +37,14 @@ sources:
     upstream: https://dumps.wikimedia.org/wikidatawiki/entities/20260831/
     licence: CC0-1.0
     licence_url: https://creativecommons.org/publicdomain/zero/1.0/
+    licence_note: |
+      Wikidata's licensing page says the CC0 applies to structured data in the
+      main, property and lexeme namespaces; text in other namespaces is
+      CC BY-SA 4.0. Everything taken here is structured data from the main
+      namespace, so CC0 is the right one, and the distinction is written down
+      because "Wikidata is CC0" is not true of the whole site.
+      Wikidata requires no attribution.
+      https://www.wikidata.org/wiki/Wikidata:Licensing
     supplies:
       - every key under `wikidata`: label, description, aliases, found
 
@@ -52,6 +65,15 @@ licensing:
     Database or a Collective Database under ODbL section 4.5. The two are
     joined on a shared key into one record rather than merely shipped in one
     archive, which is why the stricter reading is the one taken here.
+
+    That reading has not been checked against the ODbL legal text. The
+    OpenStreetMap copyright page does not draw the Derivative and Collective
+    distinction at all and points at the Open Data Commons legal code and the
+    OSMF licence page for it, and neither has been read. The position here is
+    the cautious one taken without reading them, which is a reason to treat it
+    as a starting point rather than as settled.
+    https://opendatacommons.org/licenses/odbl/1-0/
+    https://osmfoundation.org/wiki/Licence
   separating_them: |
     The two sides are in separate keys of every record, `osm` and `wikidata`,
     so a reader who wants only the CC0 half can take it without inspecting the

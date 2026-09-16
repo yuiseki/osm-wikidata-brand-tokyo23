@@ -85,8 +85,13 @@ OpenStreetMap and everything under `wikidata` is from Wikidata.
     Wikidata        wikidata-20260831-all.json.bz2, CC0-1.0
                     label, description and aliases under `wikidata`
 
+Wikidata's CC0 covers structured data in the main, property and lexeme
+namespaces; text elsewhere on the site is CC BY-SA 4.0. Everything taken here
+is main-namespace structured data. Wikidata asks for no attribution.
+
 The file contains content derived from OpenStreetMap, so redistributing it
-means complying with ODbL:
+means complying with ODbL. That is two obligations and not one: credit
+OpenStreetMap, and make clear the data is under ODbL.
 
     (c) OpenStreetMap contributors, available under the Open Database License.
     https://www.openstreetmap.org/copyright
@@ -98,7 +103,11 @@ disappear because CC0 content is alongside.
 Whether joining the two on a shared key makes a Derivative Database or a
 Collective Database under ODbL section 4.5 is not settled here. They are
 joined into one record rather than shipped in one archive, which is why the
-stricter reading is the one taken. That is a position, not legal advice, and
-`data/provenance.yaml` says so in as many words.
+stricter reading is the one taken.
+
+That is a position and not legal advice, and it was reached without reading
+the ODbL legal text: the OpenStreetMap copyright page does not draw the
+distinction and points elsewhere for it. `data/provenance.yaml` says so, and
+says where to look.
 
 The code in `src/` is MIT.
