@@ -140,6 +140,68 @@ survives that.
 `json.loads` the JSON columns. Nothing in the repository's `brands.jsonl` is
 missing from `record`.
 
+## One brand, and what its thirty values actually are
+
+Take every value on the 7-Eleven record, from both sources and all keys, and
+thirty come out. They are three different things and a reader who treats them
+as one list will be wrong about most of them.
+
+Sixteen are the chain, written differently:
+
+    7-Eleven  7-ELEVEN  7 Eleven  Seven Eleven  Seven-Eleven  7-11  711
+    セブン-イレブン  セブンイレブン  せぶん-いれぶん  せぶんいれぶん
+    Sebun Irebun  Sebun-Irebun  세븐일레븐  7-11超市  7-11便利店
+
+Three are one shop each:
+
+    Seven Eleven Sengakuji Station
+    セブン-イレブン 大田区西糀谷４丁目店
+    Seven Eleven - Nanatsuji
+
+And nine are wrong:
+
+    Rōson  ローソン        Kokosu  ココストア      Sankusu  サンクス
+    Mini Sutoppu  ミニストップ   미니스톱         Surīefu  スリーエフ
+    Comfort Hotel Tokyo Higashi Nihombashi
+    あだちほづかちょう      chome-2-10. 住宿點
+
+Those are features tagged `brand:wikidata=Q259340` whose `name:ja_rm` or
+`name:ko` still says a different chain. A Lawson that became a 7-Eleven, with
+the brand id updated and the romaji left behind.
+
+## Telling the three apart
+
+The counts do it, and it is not subtle:
+
+    7-ELEVEN        1513        Rōson              2
+    7-Eleven        1942        Kokosu             1
+    セブン-イレブン    1941        Mini Sutoppu       1
+    Sebun Irebun    1454        Seven Eleven Sengakuji Station   1
+
+Three orders of magnitude between the chain's names and the noise. A threshold
+on the count, or on the count as a share of `features`, separates them for any
+brand with enough features to have a shape. For a brand on one feature there
+is nothing to separate and nothing to learn, which is what the `features`
+field is for.
+
+Prefer `brand:*` over `name:*` where both carry the value. Across the file
+18% of the values under a `brand` key appear on one feature against 78% under
+a `name` key, so the brand keys are most of the signal and little of the
+noise. The exception is romaji and kana, which almost never appear under a
+brand key: `name:ja_rm`, `name:ja-Latn` and `name:ja-Hira` are where
+`Sebun Irebun` and `せぶんいれぶん` live.
+
+## A third use: finding tagging mistakes
+
+The nine wrong values are not only noise. Each is a feature in OpenStreetMap
+where `brand:wikidata` and a name tag disagree about which chain this is, and
+that is a real defect in the map, locatable and fixable. Selecting the values
+whose count is tiny and whose text matches another brand's high-count value is
+a list of features worth looking at.
+
+Nothing here has been fixed upstream. This file records what the extract said
+on 2026-08-31.
+
 ## What each source knows that the other does not
 
 OpenStreetMap has spellings Wikidata does not:
