@@ -24,7 +24,14 @@ Every way two independent sources name the same shop chain, in the
 twenty-three special wards of Tokyo, and the name of every shop in those
 chains.
 
-729 brands, 25,149 features, 9,201 distinct values across 80 keys.
+892 brands, 25,407 features, 15,730 distinct values across 82 keys.
+
+This is the second version. The first read the extract through PostGIS, where
+osm2pgsql had promoted `name` and `brand` to columns of their own, so the
+hstore column the build queried held every name key except those two. They
+carry 6,529 of the values here, and 163 brands spelled only those ways were
+missing from the file. The extract is now read with osmium. Nothing that was
+in the first version is gone from this one.
 
 The wards are in the name because the counts are of them. `7-ELEVEN` on 1,513
 features is a fact about Tokyo and not about the world.
@@ -232,8 +239,8 @@ Wikidata's alone: `スタバ` is what people say and no feature is tagged with i
 Three things look like defects and are not. A HELLO CYCLING port standing in a
 convenience store car park carries the cycle scheme's `brand:wikidata` beside
 the shop's `name`, so 145 features appear to say that HELLO CYCLING is called
-Seven-Eleven. One chain has two Wikidata items. 143 of the 729 brands appear
-on a single feature.
+Seven-Eleven. One chain has two Wikidata items. 256 of the 892 brands appear
+on a single feature, and three point at Wikidata items that no longer exist.
 
 Nothing is filtered out over any of it; the keys and the counts are in the
 record so that a reader can filter for themselves. The repository's
@@ -242,7 +249,8 @@ record so that a reader can filter for themselves. The repository's
 ## Where it comes from
 
     OpenStreetMap   tokyo23-260831.osm.pbf, the twenty-three wards cut from
-                    the planet file of 2026-08-31
+                    the planet file of 2026-08-31, read object by object
+                    with osmium
                     md5 44a4ba2182379c147f20a27ad1b513ef
     Wikidata        wikidata-20260831-all.json.bz2, the same day
                     md5 f99e3ee0778ffe1c3b54fa5dbc6ce395
@@ -253,8 +261,9 @@ when each was read. Both checksums are the ones the sources publish, and the
 local copies were checked against them.
 
 Built in a pinned image, Debian bookworm at a fixed digest with python3
-3.11.2, lbzip2 2.5 and psycopg 3.3.2. Running the three build steps inside it
-reproduced the run made outside it byte for byte. `provenance.yaml` beside
+3.11.2, lbzip2 2.5 and osmium-tool 1.15.0. The file was built inside the image
+and outside it, on a host carrying osmium 1.16.0, and the two are byte for
+byte the same. `provenance.yaml` beside
 this file has the commands, the versions and the item counts.
 
 ## Two licences meet here

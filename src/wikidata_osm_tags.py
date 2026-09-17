@@ -12,8 +12,8 @@ precisely because it is not the tag value.
 
 The other set is every item the frozen extract points at. OpenStreetMap
 carries 31 different `*:wikidata` keys in these twenty-three wards, from
-`brand:wikidata` on 25,413 features through `wikidata` on 15,715 to
-`architect:wikidata` on 74, and between them they name 9,706 items. Those are
+`brand:wikidata` on 25,407 features through `wikidata` on 15,715 to
+`architect:wikidata` on 74, and between them they name 9,807 items. Those are
 not concepts behind tags; they are the brands, the places and the operators
 themselves. Starbucks has no P1282 and never will.
 

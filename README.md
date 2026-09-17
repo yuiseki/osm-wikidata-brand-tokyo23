@@ -127,9 +127,8 @@ python3 src/wikidata_osm_tags.py \
 python3 src/build.py                                # seconds
 ```
 
-The middle step reads 121,519,241 items at about 42,000 a second and keeps
-13,288: the 9,690 the extract points at, and 3,594 more that carry Wikidata's
-property `P1282`, which maps a concept to an OpenStreetMap tag. It decides on
+The middle step reads 121,519,241 items and keeps 13,387: the 9,786 the
+extract points at, and 3,601 more that carry Wikidata's property `P1282`, which maps a concept to an OpenStreetMap tag. It decides on
 bytes before parsing, because fewer than one item in a thousand is wanted and
 parsing all of them would be the whole cost.
 
