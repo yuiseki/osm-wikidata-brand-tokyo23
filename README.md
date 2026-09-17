@@ -10,6 +10,15 @@ the same way would be a second dataset rather than more rows in this one.
 
 892 brands, 25,407 features, 15,730 distinct spellings across 82 name keys.
 
+The data is on the Hugging Face Hub. This repository is how it was built.
+
+    https://huggingface.co/datasets/yuiseki/osm-wikidata-brand-tokyo23
+
+The same thing for the whole of Japan is a separate dataset, whose counts are
+counts of the country rather than of these wards.
+
+    https://huggingface.co/datasets/yuiseki/osm-wikidata-brand-jp
+
 This is the second version. The first was built by reading the extract
 through PostGIS, and osm2pgsql promotes `name` and `brand` to columns of their
 own, so the hstore column the build read held every name key except those two.
