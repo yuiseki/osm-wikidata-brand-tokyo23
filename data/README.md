@@ -224,15 +224,18 @@ Wikidata has aliases OpenStreetMap does not:
     7-Eleven    Seven Eleven, 7-11, 711
     FamilyMart  Famima, Family Mart, FM
     Lawson      LAWSON, INC.
-    Starbucks   スタバ
 
 Neither list corrects the other. Someone looking for a 7-Eleven might type
 `7-ELEVEN`, `7-Eleven`, `Seven Eleven`, `7-11`, `711`, `セブン-イレブン`,
 `セブンイレブン` or `Sebun Irebun`, and only the union has all eight.
 
 The Japanese side is where they are furthest apart. Romaji are OpenStreetMap's
-alone and disagree with themselves about long vowels. Abbreviations are
-Wikidata's alone: `スタバ` is what people say and no feature is tagged with it.
+alone and disagree with themselves about long vowels.
+
+Abbreviations are in both, thinly. `スタバ` is a Wikidata alias for Starbucks
+and is also on three of its 283 features, under `short_name`; `ファミマ` is on
+one FamilyMart. Wikidata gives an abbreviation once per brand and
+OpenStreetMap gives it as often as a mapper wrote it, which is almost never.
 
 ## Read this before using it
 

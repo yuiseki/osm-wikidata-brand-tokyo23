@@ -69,9 +69,13 @@ Matching a name a person types to a thing on a map. `7-ELEVEN`, `7-Eleven`,
 
 The Japanese side is where the two sources are furthest apart. Romaji are
 OpenStreetMap's alone, and they disagree with each other about long vowels:
-`Sutābakkusu` on 123 features and `Sutah-bakkusu` on 72. Abbreviations are
-Wikidata's alone: `スタバ` is what people say and no map feature is tagged
-with it.
+`Sutābakkusu` on 123 features and `Sutah-bakkusu` on 72.
+
+Abbreviations are in both, thinly. `スタバ` is a Wikidata alias for Starbucks
+and is also on three of its 283 features, under `short_name`; `ファミマ` is on
+one FamilyMart. Wikidata gives an abbreviation once per brand, and
+OpenStreetMap gives it as often as a mapper happened to write it, which is
+almost never. A matcher wanting abbreviations should take Wikidata's.
 
 ## Read this first
 

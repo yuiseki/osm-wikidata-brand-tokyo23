@@ -84,7 +84,11 @@ Wikidata has aliases OpenStreetMap does not:
     7-Eleven      Seven Eleven, 7-11, 711
     FamilyMart    Famima, Family Mart, FM
     Lawson        LAWSON, INC.
-    Starbucks     スタバ
+
+`スタバ` is in both, which is easy to miss: it is a Wikidata alias for
+Starbucks and it is also on three of that brand's 283 features, under
+`short_name`. An abbreviation reaches Wikidata once and reaches the map only
+as often as some mapper wrote it.
 
 Neither list is a correction of the other. A person looking for a 7-Eleven
 might type any of `7-ELEVEN`, `7-Eleven`, `Seven Eleven`, `7-11`, `711`,
