@@ -61,7 +61,7 @@ asserting an answer to a question Wikidata itself has two entries for.
 
 ## Half the brands are almost absent
 
-    143 of the 729 appear on exactly one feature
+    256 of the 892 appear on exactly one feature
     298 appear on ten or more
 
 A brand on one feature contributes one spelling and no evidence about which
@@ -90,3 +90,15 @@ Neither list is a correction of the other. A person looking for a 7-Eleven
 might type any of `7-ELEVEN`, `7-Eleven`, `Seven Eleven`, `7-11`, `711`,
 `セブン-イレブン`, `セブンイレブン` or `Sebun Irebun`, and only the union of the
 two sources has all of them.
+
+## Three brands point at Wikidata items that are not there
+
+    Q88485610   7 features
+    Q61799370   1
+    Q11228227   1
+
+Their records carry `"found": false` and an empty label, description and
+aliases. An id in OpenStreetMap is what a mapper typed, and Wikidata deletes
+and merges items without telling anyone who linked to one. Nothing is dropped
+over it: the OpenStreetMap half of those records is as good as any other, and
+`found` is in the record so a reader can require the other half.

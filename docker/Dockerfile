@@ -2,12 +2,14 @@
 # rebuild and not a different run that happens to produce a similar file.
 #
 # Three things decide the output and all three are here. Python, because the
-# scripts are Python. psycopg, because it reads PostGIS. lbzip2, because the
-# 96 GiB dump is read through it and bzip2 alone would take hours on one core.
+# scripts are Python. osmium-tool, because the extract is read with it.
+# lbzip2, because the 96 GiB dump is read through it and bzip2 alone would
+# take hours on one core.
 #
-# PostGIS itself is not here: it belongs to osm-tokyo23-src-2026-08, which
-# pins postgis/postgis:16-3.4 and osm2pgsql 1.11.0 and is where the frozen
-# extract is built. This container connects to it.
+# PostGIS is gone from this image and from the code. Reading the extract
+# through osm2pgsql cost this dataset its two most important keys: that tool
+# promotes `name` and `brand` to columns of their own, so the hstore column
+# the build read held every name key except those two.
 # Pinned by digest, not by tag. `bookworm-slim` moves; this does not.
 FROM debian:bookworm-slim@sha256:88200866dfff7ea7f5cbcb6ec7c8a701889efe6fe859fe64d6990e4b07ea4171
 
@@ -18,19 +20,15 @@ FROM debian:bookworm-slim@sha256:88200866dfff7ea7f5cbcb6ec7c8a701889efe6fe859fe6
 # is the point.
 ARG PYTHON_VERSION=3.11.2-1+b1
 ARG LBZIP2_VERSION=2.5-2.3
-ARG PIP_VERSION=23.0.1+dfsg-1
-ARG PSYCOPG_VERSION=3.3.2
+ARG OSMIUM_VERSION=1.15.0-1
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       python3=${PYTHON_VERSION} \
-      python3-pip=${PIP_VERSION} \
       lbzip2=${LBZIP2_VERSION} \
+      osmium-tool=${OSMIUM_VERSION} \
       ca-certificates \
- && rm -rf /var/lib/apt/lists/*
-
-RUN pip3 install --no-cache-dir --break-system-packages \
-      "psycopg[binary]==${PSYCOPG_VERSION}" \
- && python3 -c "import psycopg; assert psycopg.__version__ == '${PSYCOPG_VERSION}'"
+ && rm -rf /var/lib/apt/lists/* \
+ && osmium --version | grep -q "osmium version 1.15.0"
 
 WORKDIR /work

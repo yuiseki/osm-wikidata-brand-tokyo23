@@ -5,8 +5,13 @@ sources:
   - name: OpenStreetMap
     through: |
       tokyo23-260831.osm.pbf, the twenty-three special wards of Tokyo cut from
-      the planet file of 2026-08-31, loaded into PostGIS by osm2pgsql and read
-      with SQL. Nothing was fetched from the live API.
+      the planet file of 2026-08-31, read object by object with osmium.
+      Nothing was fetched from the live API.
+
+      The first version read it through PostGIS instead, and that was wrong:
+      osm2pgsql promotes `name` and `brand` to columns of their own, so the
+      hstore column the build read held every name key except those two. See
+      docs/what-changed-in-v2.md.
     file: tokyo23-260831.osm.pbf
     md5: 44a4ba2182379c147f20a27ad1b513ef
     bytes: 87399745
@@ -30,7 +35,7 @@ sources:
   - name: Wikidata
     through: |
       wikidata-20260831-all.json.bz2, read once in a stream. The items taken
-      are the 9,706 that the extract above points at through any *:wikidata
+      are the 9,807 that the extract above points at through any *:wikidata
       key, plus every item carrying property P1282.
     file: wikidata-20260831-all.json.bz2
     bytes: 102943257005
@@ -47,7 +52,7 @@ sources:
       not a truncated or resumed download that happened to be the right length.
     upstream: https://dumps.wikimedia.org/wikidatawiki/entities/20260831/
     items_read: 121519241
-    items_kept: 13288
+    items_kept: 13387
     licence: CC0-1.0
     licence_url: https://creativecommons.org/publicdomain/zero/1.0/
     licence_note: |
@@ -100,37 +105,39 @@ environment:
   image: docker/Dockerfile
   base: debian:bookworm-slim@sha256:88200866dfff7ea7f5cbcb6ec7c8a701889efe6fe859fe64d6990e4b07ea4171
   python3: 3.11.2-1+b1
-  python3-pip: 23.0.1+dfsg-1
   lbzip2: 2.5-2.3
-  psycopg: 3.3.2
+  osmium-tool: 1.15.0-1
   note: |
     The base is pinned by digest and not by tag, because bookworm-slim moves
-    and a digest does not. psycopg's version is asserted after installation, so
-    pip resolving something else is a build failure. Debian drops old versions
+    and a digest does not. osmium's version is asserted after installation, so
+    apt resolving something else is a build failure. Debian drops old versions
     from the archive, so these pins will stop resolving one day; that the build
     then fails is the point of writing them down.
 
-    PostGIS is not in this image. It belongs to osm-tokyo23-src-2026-08, which
-    pins postgis/postgis:16-3.4 and osm2pgsql 1.11.0 and is where the frozen
-    extract is built; this container connects to it over the host network.
+    There is no database here and no network. The extract is a file, the dump
+    is a file, and neither source's live API is consulted; the compose service
+    runs with network_mode: none.
   reproduced: |
-    The three steps were run again inside this image, against the same dump and
-    the same database, and every output matched the run made outside it byte
-    for byte: the 9,706 ids, the 13,288 Wikidata items, and data/brands.jsonl.
-    The dump pass read 121,519,241 items both times.
+    data/brands.jsonl was built inside this image and outside it, from the same
+    extract and the same Wikidata file, and the two are byte for byte the same.
+    The host has osmium 1.16.0 and the image 1.15.0, so that also says the two
+    versions read these tags identically.
+
+    The dump pass read 121,519,241 items and kept 13,387.
 
 how_it_was_built: |
   Three steps, in this order, all of them in src/ and none of them reaching
   outside this repository by absolute path.
 
-    src/qids.py              the 9,706 Wikidata ids the extract points at,
+    src/qids.py              the 9,807 Wikidata ids the extract points at,
                              off all 31 of its *:wikidata keys
-    src/wikidata_osm_tags.py one pass over the dump, 48 minutes, keeping the
-                             items those ids name and the ones carrying P1282
+    src/wikidata_osm_tags.py one pass over the dump, about an hour, keeping
+                             the items those ids name and the ones carrying
+                             P1282
     src/build.py             the join, and the counting of spellings
 
-  The inputs are named by environment variable, PG_DSN and WIKIDATA_ITEMS, so
-  that the same code runs against a rebuilt stack. Rerunning the three steps
+  The inputs are named by environment variable, EXTRACT and WIKIDATA_ITEMS, so
+  that the same code runs against a copy kept somewhere else. Rerunning the three steps
   against the same two sources reproduces data/brands.jsonl byte for byte;
   that was checked rather than assumed.
 

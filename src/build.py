@@ -17,28 +17,42 @@ on 123 features and `Sutah-bakkusu` on 72, two ways of writing one long vowel.
 Counts are kept. A spelling on 1,513 features and a spelling on one are both
 real and are not the same claim.
 
-    python3 src/build.py
+The extract is read with osmium rather than through PostGIS, which is a
+correction. osm2pgsql promotes `name` and `brand` to columns of their own, so
+the hstore column this file used to read held every name key except those two,
+and they are the two that matter most: together they carried 6,529 of the
+15,730 spellings in these wards, and 163 brands whose features spell the name
+only those ways were missing from the file altogether. Reading the objects
+directly also settles what one feature is without an opinion, where osm2pgsql
+splits some relations into several rows and drops the types it has no rule for.
+
+    python3 src/build.py --pbf tokyo23-260831.osm.pbf
 """
 import argparse
 import collections
 import json
 import os
+import re
+import subprocess
 import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import opl  # noqa: E402
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Everything this needs is either in this repository or named by an
 # environment variable. Nothing reaches into a sibling checkout by absolute
 # path, because a reader who clones this cannot follow such a path and the
 # file would not be rebuildable by anyone but its author.
-PG_DSN = os.environ.get(
-    "PG_DSN", "host=localhost port=55433 dbname=osm user=osm password=osm")
+EXTRACT = os.environ.get("EXTRACT", os.path.join(BASE, "tmp/tokyo23-260831.osm.pbf"))
 WD = os.environ.get("WIKIDATA_ITEMS", os.path.join(BASE, "tmp/wikidata.jsonl"))
 
 # Every key on a branded feature that is a way of saying its name. Taken from
 # what the extract actually carries rather than from a list written here, so
 # that a key nobody uses is not invented and one in use is not missed.
-NAME_KEY = (r"^(brand|name|alt_name|int_name|official_name|short_name|"
-            r"loc_name|nat_name|reg_name|old_name)(:|$)")
+NAME_KEY = re.compile(r"^(brand|name|alt_name|int_name|official_name|"
+                      r"short_name|loc_name|nat_name|reg_name|old_name)(:|$)")
+QID = re.compile(r"^Q[0-9]+$")
 # Not names: these say where the brand's page is, not what it is called.
 NOT_A_NAME = {"brand:wikidata", "brand:wikipedia", "brand:website",
               "name:etymology:wikidata", "name:wikidata"}
@@ -60,60 +74,42 @@ SOURCE = {
 }
 
 
-_conn = None
+def branded(pbf):
+    """Every object carrying brand:wikidata, as (kind, id, tags).
+
+    Two osmium passes into tmp, which are cheap on an 84 MiB extract and keep
+    the reading of the data separate from the writing of the file.
+    """
+    tmp = os.path.join(BASE, "tmp")
+    os.makedirs(tmp, exist_ok=True)
+    small = os.path.join(tmp, "branded.osm.pbf")
+    text = os.path.join(tmp, "branded.opl")
+    subprocess.run(["osmium", "tags-filter", "--overwrite", "-o", small,
+                    pbf, "brand:wikidata"], check=True,
+                   stdout=subprocess.DEVNULL)
+    subprocess.run(["osmium", "cat", "-f", "opl", "--overwrite", "-o", text,
+                    small], check=True, stdout=subprocess.DEVNULL)
+    # tags-filter also writes the nodes a matching way refers to, so that the
+    # file stays usable as geometry. Those carry no tags and are not features.
+    for kind, oid, tags in opl.objects(text):
+        q = tags.get("brand:wikidata")
+        if q and QID.match(q):
+            yield kind, oid, tags
 
 
-def pg(sql, params=None):
-    global _conn
-    import psycopg
-    if _conn is None or _conn.closed:
-        _conn = psycopg.connect(PG_DSN)
-        _conn.read_only = True
-        _conn.autocommit = True
-    with _conn.cursor() as cur:
-        cur.execute(sql, params)
-        return cur.fetchall()
-
-
-def osm_names():
-    """{qid: {key: {spelling: features}}} from the frozen extract."""
-    rows = pg(f"""
-select wd, k, v, sum(n) from (
-  select tags -> 'brand:wikidata' as wd, (each(tags)).key as k,
-         (each(tags)).value as v, 1 as n
-    from planet_osm_point where tags ? 'brand:wikidata'
-  union all
-  select tags -> 'brand:wikidata', (each(tags)).key, (each(tags)).value, 1
-    from planet_osm_polygon where tags ? 'brand:wikidata'
-  union all
-  select tags -> 'brand:wikidata', (each(tags)).key, (each(tags)).value, 1
-    from planet_osm_line where tags ? 'brand:wikidata'
-) x
- where k ~ '{NAME_KEY}' and wd ~ '^Q[0-9]+$'
- group by 1, 2, 3""")
-    out = collections.defaultdict(lambda: collections.defaultdict(dict))
-    for q, k, v, n in rows:
-        if k in NOT_A_NAME:
-            continue
-        out[q][k][v] = int(n)
-    return out
-
-
-def osm_features():
-    """{qid: features}, so that a brand on one shop is not read as a brand on
-    a thousand."""
-    rows = pg("""
-select wd, sum(n) from (
-  select tags -> 'brand:wikidata' as wd, count(*) as n
-    from planet_osm_point where tags ? 'brand:wikidata' group by 1
-  union all
-  select tags -> 'brand:wikidata', count(*)
-    from planet_osm_polygon where tags ? 'brand:wikidata' group by 1
-  union all
-  select tags -> 'brand:wikidata', count(*)
-    from planet_osm_line where tags ? 'brand:wikidata' group by 1
-) x where wd ~ '^Q[0-9]+$' group by 1""")
-    return {q: int(n) for q, n in rows}
+def osm_names_and_counts(pbf):
+    """({qid: {key: {spelling: features}}}, {qid: features})."""
+    names = collections.defaultdict(
+        lambda: collections.defaultdict(collections.Counter))
+    counts = collections.Counter()
+    for _, _, tags in branded(pbf):
+        q = tags["brand:wikidata"]
+        counts[q] += 1
+        for k, v in tags.items():
+            if k in NOT_A_NAME or not NAME_KEY.match(k):
+                continue
+            names[q][k][v] += 1
+    return names, dict(counts)
 
 
 def wikidata():
@@ -128,16 +124,18 @@ def wikidata():
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=os.path.join(BASE, "data/brands.jsonl"))
+    ap.add_argument("--pbf", default=EXTRACT)
     a = ap.parse_args()
 
-    names, counts, wd = osm_names(), osm_features(), wikidata()
+    names, counts = osm_names_and_counts(a.pbf)
+    wd = wikidata()
     rows = []
     for q in sorted(names, key=lambda x: -counts.get(x, 0)):
         w = wd.get(q, {})
         rows.append({
             "qid": q,
             "features": counts.get(q, 0),
-            "osm": {k: dict(sorted(v.items(), key=lambda kv: -kv[1]))
+            "osm": {k: dict(sorted(v.items(), key=lambda kv: (-kv[1], kv[0])))
                     for k, v in sorted(names[q].items())},
             "wikidata": {
                 "label": w.get("label", {}),

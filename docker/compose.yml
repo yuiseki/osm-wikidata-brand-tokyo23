@@ -8,13 +8,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    # The host's network, because the frozen extract's PostGIS is a container
-    # of another repository's compose file and is reached on localhost:55433.
-    # A bridge network here would need that port republished, which would make
-    # this file depend on how the other one was started.
-    network_mode: host
+    # No network. Nothing here fetches anything: the extract and the dump are
+    # both files, and the live APIs of neither source are consulted.
+    network_mode: none
     environment:
-      PG_DSN: ${PG_DSN:-host=localhost port=55433 dbname=osm user=osm password=osm}
+      EXTRACT: /work/tmp/tokyo23-260831.osm.pbf
       WIKIDATA_ITEMS: /work/tmp/wikidata.jsonl
     volumes:
       - ..:/work

@@ -8,7 +8,15 @@ The wards are in the name because the counts are of them. `7-ELEVEN` on 1,513
 features is a fact about Tokyo, not about the world, and a second city built
 the same way would be a second dataset rather than more rows in this one.
 
-729 brands, 25,149 features, 9,201 distinct spellings across 80 name keys.
+892 brands, 25,407 features, 15,730 distinct spellings across 82 name keys.
+
+This is the second version. The first was built by reading the extract
+through PostGIS, and osm2pgsql promotes `name` and `brand` to columns of their
+own, so the hstore column the build read held every name key except those two.
+Between them they carry 6,529 of the spellings here, and 163 brands whose
+features are spelled only those ways were missing from the file altogether.
+The extract is now read with osmium. Nothing that was in the first version is
+gone from this one; see `docs/what-changed-in-v2.md`.
 
 ## Where it comes from
 
@@ -18,7 +26,8 @@ item carries a label, a description and aliases in each language, written by
 different people for a different purpose. Neither source reads the other.
 
     OpenStreetMap   tokyo23-260831.osm.pbf, the twenty-three wards cut from
-                    the planet file of 2026-08-31
+                    the planet file of 2026-08-31, read object by object with
+                    osmium
     Wikidata        wikidata-20260831-all.json.bz2, the same day
 
 The two dates are the same day on purpose. A brand added to OpenStreetMap in
@@ -32,8 +41,10 @@ disagreeing with itself.
   "qid": "Q259340",
   "features": 1942,
   "osm": {
+    "brand": {"7-ELEVEN": 1512, "セブン-イレブン": 428, "7-Eleven": 1},
     "brand:en": {"7-ELEVEN": 1513, "7-Eleven": 428},
     "brand:ja": {"セブン-イレブン": 1941},
+    "name": {"セブン-イレブン": 1941, "セブン-イレブン;平和台駅": 1},
     "name:ja_rm": {"Sebun Irebun": 1454, "Rōson": 2},
     "name:ko": {"세븐일레븐": 1490}
   },
@@ -65,8 +76,8 @@ with it.
 ## Read this first
 
 `docs/what-is-in-here-and-what-is-wrong-with-it.md`. A name key is not a
-brand key, one chain has two Wikidata items, and 143 of the 729 brands appear
-on a single feature. Nothing is filtered out over any of it; the keys and the
+brand key, one chain has two Wikidata items, and a great many brands appear on
+a single feature. Nothing is filtered out over any of it; the keys and the
 counts are in the record so that a reader can filter for themselves.
 
 ## Building it
@@ -77,9 +88,10 @@ would be rebuildable by its author alone.
 
 Two inputs have to be in place first, and both are named rather than assumed.
 
-The frozen extract, in PostGIS. `osm-tokyo23-src-2026-08` builds it: fetch the
-planet file of 2026-08-31, run its numbered scripts, and the database comes up
-on port 55433. `PG_DSN` points somewhere else if it is somewhere else.
+The frozen extract, as a file. It is published as
+`osm-tokyo23-src-2026-08`, and `osm-tokyo23-questions` and this repository
+both read that one file. Put it at `tmp/tokyo23-260831.osm.pbf`, or point
+`EXTRACT` at it. No database is involved.
 
 The Wikidata dump, 96 GiB, from
 `https://dumps.wikimedia.org/wikidatawiki/entities/20260831/`. Do not
@@ -98,15 +110,17 @@ docker compose run --rm build sh -c '
   python3 src/build.py'
 ```
 
-Debian bookworm at a fixed digest, python3 3.11.2, lbzip2 2.5 and psycopg
-3.3.2, each named in `docker/Dockerfile`. Running the three steps inside the
-image reproduced the run made outside it byte for byte, which is the only
-reason to believe the pins are the right ones.
+Debian bookworm at a fixed digest, python3 3.11.2, lbzip2 2.5 and
+osmium-tool 1.15.0, each named in `docker/Dockerfile`. Running the steps
+inside the image reproduced the run made outside it byte for byte, which is
+the only reason to believe the pins are the right ones. The host that built it
+has osmium 1.16.0 and the container 1.15.0, and the file is the same either
+way.
 
 Or on the host, if those versions are what the host has:
 
 ```sh
-python3 src/qids.py --out tmp/qids.txt              # 9,706 ids, seconds
+python3 src/qids.py --out tmp/qids.txt              # 9,807 ids, seconds
 python3 src/wikidata_osm_tags.py \
     --dump .../wikidata-20260831-all.json.bz2 \
     --qids tmp/qids.txt --out tmp/wikidata.jsonl    # 48 min, 121.5M items
